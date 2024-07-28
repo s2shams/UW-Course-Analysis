@@ -14,7 +14,7 @@ def scroll_to_bottom(driver):
     last_height = driver.execute_script('return document.body.scrollHeight')
     while True:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
+        time.sleep(1)
         # Check if height has changed
         new_height = driver.execute_script("return document.body.scrollHeight")
         if new_height == last_height:
@@ -24,6 +24,6 @@ def scroll_to_bottom(driver):
 def wait_for_element(driver, xpath):
     try:
         element = EC.presence_of_element_located((By.XPATH, xpath))
-        WebDriverWait(driver, 10).until(element)
+        WebDriverWait(driver, 120).until(element)
     except TimeoutException:
         print("Timed out waiting for page to load")

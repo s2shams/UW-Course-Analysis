@@ -53,6 +53,10 @@ while more_courses:
 
             number_of_comments = driver.find_element(By.XPATH, "//a[@class='sc-qPwPv gjSZrg']").text
 
+            show_course_reviews = driver.find_element(By.XPATH, "//button//div[contains(text(), 'Show all')]")
+            if show_course_reviews:
+                show_course_reviews.click()
+
             reviews_raw = driver.find_elements(By.XPATH, "//div[@class='sc-pLwIe kqSAIH']")
             if not reviews_raw:
                 reviews = ['No reviews']

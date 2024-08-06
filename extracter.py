@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from Helper_functions import *
 import pandas as pd
+import sys
 import pdb
 import sys
 import io
@@ -23,14 +24,15 @@ actions = ActionChains(driver)
 # scroll_to_bottom(driver)
 
 # Create empty dataframes to store the data
-df = pd.DataFrame(columns = ['Course_Code', 'Course_Name', 'Number_of_Ratings', 'Number_of_Comments', 'Useful', 'Easy', 'Liked', 'Course_Reviews'])
+df = pd.DataFrame(columns = ['Course_Code', 'Course_Name', 'Number_of_Ratings', 'Number_of_Comments', 'Useful', 'Easy', 'Liked', 'Course_Reviews', 'Course_Enrollment'])
 df2 = pd.DataFrame(columns = ['Professor_Name', 'Course', 'Liked_%', 'Professor_Reviews'])
 
 # Access each course tab and push the data to the dataframe
 course_tabs = driver.find_elements(By.XPATH, '//div[@role="rowgroup"]//div[@role="row"]')
 copy_tabs = course_tabs.copy()
-course_index = -1
+course_index = 0
 more_courses = True
+
 while more_courses:
     try:
         tab = copy_tabs[course_index]
@@ -49,13 +51,17 @@ while more_courses:
             driver.execute_script(f'window.open("{course_link}", "_blank");')
             driver.switch_to.window(driver.window_handles[1])
             # wait_for_element(driver, "//div[@class='sc-pKMan dgjbLL']")
-            wait_for_element(driver, "//a[@class='sc-qPwPv gjSZrg']")
+            wait_for_element(driver, "//div[@class='sc-pktCe eHAbVk']")
 
-            number_of_comments = driver.find_element(By.XPATH, "//a[@class='sc-qPwPv gjSZrg']").text
+            # number_of_comments = driver.find_element(By.XPATH, "//a[@class='sc-qPwPv gjSZrg']").text
+            if driver.find_elements(By.XPATH, "//a[@class='sc-qPwPv gjSZrg']"):
+                number_of_comments = driver.find_elements(By.XPATH, "//a[@class='sc-qPwPv gjSZrg']")[0].text
+            else:
+                number_of_comments = 0
 
-            show_course_reviews = driver.find_element(By.XPATH, "//button//div[contains(text(), 'Show all')]")
+            show_course_reviews = driver.find_elements(By.XPATH, "//div[@class='sc-pjumZ bFIXxS']")
             if show_course_reviews:
-                show_course_reviews.click()
+                driver.execute_script("arguments[0].click();", show_course_reviews[0])
 
             reviews_raw = driver.find_elements(By.XPATH, "//div[@class='sc-pLwIe kqSAIH']")
             if not reviews_raw:
@@ -63,7 +69,21 @@ while more_courses:
             else:
                 reviews = [review.text for review in reviews_raw]
             
+            # add number of students enrolled if available
             wait_for_element(driver, "//button[contains(text(), 'Professor reviews')]")
+
+            enrollment = []
+            if driver.find_elements(By.XPATH, "//div[@class='sc-oTaid gAHERc']"):
+                terms = driver.find_elements(By.XPATH, "//div[@class='sc-oTaid gAHERc']//div//button")
+                for term in terms:
+                    actions.click(term).perform()
+                    lectures = driver.find_elements(By.XPATH, "//div[@role='rowgroup']//div[@role='row']//div[@role='cell'][3]//div//div//div")
+                    if lectures:
+                        for lecture in lectures:
+                            enrollment.append(lecture.text)
+            else:
+                enrollment.append("no data")
+
             driver.find_element(By.XPATH, "//button[contains(text(), 'Professor reviews')]").click()
 
             toggle_reviews = driver.find_elements(By.XPATH, "//div[contains(text(), 'Show all')]")
@@ -89,17 +109,23 @@ while more_courses:
                     
                     # push to dataframe
                     df2 = append_data_to_df(df2, {'Professor_Name':professor_name, 'Course': course_code, 'Liked_%':professor_ratings, "Professor_Reviews":prof_reviews})
+                    # incase code runs into an exception, I want to be adding every row as the code runs
+                    df2.to_csv('Prof_data.csv', index=False)
+
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
         else:
             number_of_comments = 0
 
-        driver.close()
-        driver.switch_to.window(driver.window_handles[0])
-        time.sleep(.5)
+        time.sleep(1)
         course_index += 1
 
         ## Push to dataframe
         df = append_data_to_df(df, {'Course_Code':course_code, 'Course_Name':course_name, 'Number_of_Ratings':number_of_ratings, 'Number_of_Comments':number_of_comments,
-                            'Useful':course_useful, 'Easy':course_easy, 'Liked':course_liked, 'Course_Reviews': reviews})
+                            'Useful':course_useful, 'Easy':course_easy, 'Liked':course_liked, 'Course_Reviews': reviews, 'Course_Enrollment':enrollment})
+        
+        # incase code runs into an exception, I want to be adding every row as the code runs
+        df.to_csv('Course_data.csv', index= False)
         
         if tab == course_tabs[-1]:
             # Make the driver scroll down to load more courses when needed
@@ -115,17 +141,18 @@ while more_courses:
             # check if there are more courses that we can add
             all_tabs = driver.find_elements(By.XPATH, '//div[@role="rowgroup"]//div[@role="row"]')
             copy_tabs = [item for item in all_tabs if item not in course_tabs]
-            course_tabs = course_tabs.extend(copy_tabs)
+            course_tabs.extend(copy_tabs)
             # reset index if copy_tabs is changed
             course_index = 0
         
+        # pdb.set_trace()
         if not copy_tabs:
             more_courses = False # breaks when copy tabs is empty, i.e all_tabs == course_tabs
 
-        print(course_index)
-
     except Exception as e:
         print("Exception caught: " + str(e))
+        print(course_code + "--------------------------------") # debugging purposes
+        sys.exit(1) # debugging purposes
 
 # save as csv
 df.to_csv('Course_data.csv', index= False)

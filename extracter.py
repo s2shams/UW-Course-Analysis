@@ -51,19 +51,19 @@ while more_courses:
             driver.execute_script(f'window.open("{course_link}", "_blank");')
             driver.switch_to.window(driver.window_handles[1])
             # wait_for_element(driver, "//div[@class='sc-pKMan dgjbLL']")
-            wait_for_element(driver, "//div[@class='sc-pktCe eHAbVk']")
+            wait_for_element(driver, f"//*[contains(text(), '{course_code}')]")
 
             # number_of_comments = driver.find_element(By.XPATH, "//a[@class='sc-qPwPv gjSZrg']").text
-            if driver.find_elements(By.XPATH, "//a[@class='sc-qPwPv gjSZrg']"):
-                number_of_comments = driver.find_elements(By.XPATH, "//a[@class='sc-qPwPv gjSZrg']")[0].text
+            if driver.find_elements(By.XPATH, "//a[contains(normalize-space(),'comments')]"):
+                number_of_comments = driver.find_elements(By.XPATH, "//a[contains(normalize-space(),'comments')]")[0].text
             else:
                 number_of_comments = 0
 
-            show_course_reviews = driver.find_elements(By.XPATH, "//div[@class='sc-pjumZ bFIXxS']")
+            show_course_reviews = driver.find_elements(By.XPATH, "//button//div[contains(text(), 'reviews') and contains(text(), 'Show all')]")
             if show_course_reviews:
                 driver.execute_script("arguments[0].click();", show_course_reviews[0])
 
-            reviews_raw = driver.find_elements(By.XPATH, "//div[@class='sc-pLwIe kqSAIH']")
+            reviews_raw = driver.find_elements(By.XPATH, "//div[@class= 'sc-pcZJD cnFfnA']//div[normalize-space(text()) and not(translate(text(), '0123456789', '') = '')][1]")
             if not reviews_raw:
                 reviews = ['No reviews']
             else:
@@ -74,13 +74,14 @@ while more_courses:
 
             enrollment = []
             if driver.find_elements(By.XPATH, "//div[@class='sc-oTaid gAHERc']"):
-                terms = driver.find_elements(By.XPATH, "//div[@class='sc-oTaid gAHERc']//div//button")
+                terms = driver.find_elements(By.XPATH, "//div[@class='sc-oTaid gAHERc']//div//button[normalize-space(text())]")
                 for term in terms:
                     actions.click(term).perform()
                     lectures = driver.find_elements(By.XPATH, "//div[@role='rowgroup']//div[@role='row']//div[@role='cell'][3]//div//div//div")
                     if lectures:
                         for lecture in lectures:
                             enrollment.append(lecture.text)
+                            #print(lecture.text)
             else:
                 enrollment.append("no data")
 
@@ -116,6 +117,10 @@ while more_courses:
             driver.switch_to.window(driver.window_handles[0])
         else:
             number_of_comments = 0
+            enrollment = ['no data']
+            course_easy = 0
+            course_liked = 0
+            course_useful = 0
 
         time.sleep(1)
         course_index += 1

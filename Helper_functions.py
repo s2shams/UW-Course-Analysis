@@ -1,6 +1,7 @@
 import pandas as pd
 import time
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -24,6 +25,13 @@ def scroll_to_bottom(driver):
 def wait_for_element(driver, xpath):
     try:
         element = EC.presence_of_element_located((By.XPATH, xpath))
-        WebDriverWait(driver, 120).until(element)
+        WebDriverWait(driver, 300).until(element)
     except TimeoutException:
         print("Timed out waiting for page to load")
+
+def check_exists_by_xpath(driver, xpath):
+    try:
+        driver.find_elements(By.XPATH, xpath)
+    except NoSuchElementException:
+        return False
+    return True

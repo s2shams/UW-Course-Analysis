@@ -25,7 +25,7 @@ def scroll_to_bottom(driver):
 def wait_for_element(driver, xpath):
     try:
         element = EC.presence_of_element_located((By.XPATH, xpath))
-        WebDriverWait(driver, 300).until(element)
+        WebDriverWait(driver, 10).until(element)
     except TimeoutException:
         print("Timed out waiting for page to load")
 

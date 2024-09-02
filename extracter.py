@@ -3,14 +3,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from Helper_functions import *
 import pandas as pd
-import sys
 import pdb
 import sys
 import io
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-# Start WebDriver
 options = webdriver.ChromeOptions()
 #options.add_argument('--headless')
 options.binary_location = './chrome-win64/chrome.exe'

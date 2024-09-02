@@ -1,7 +1,7 @@
 # University of Waterloo Course Analysis
 
 Hi there, this is currently a project in progress. The following is a list of what is currently being worked on:
-1. Data Visualization
+1. ~~Data Visualization~~
 2. Creating dashboards
 3. Containerizing and deploying the application
 

@@ -2,7 +2,7 @@
 
 Hi there, this is currently a project in progress. The following is a list of what is currently being worked on:
 1. ~~Data Visualization~~
-2. Creating dashboards
+2. Creating dashboards 
 3. Containerizing and deploying the application
 
 ## Problem Statement
@@ -13,7 +13,7 @@ The project is broken down into 5 major components.
 1. Data Extraction: Selenium
 2. Data Cleaning: Pandas
 3. Data Visualization: Seaborn, Matplotlib, Pandas
-4. Data Dashboarding: Streamlit, Power BI
+4. Data Dashboarding: Metabase, Power BI
 5. Containerization: Docker
 
    
